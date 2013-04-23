@@ -11,14 +11,13 @@ def pipe(radius, height, name=None):
     return val
 
 
-def copy_pipe(new_radius, new_height, from_pipe=None, name=None):
-    if pipe:
-        cmds.duplicate(pipe[0], rr=True)
+def make_pipe(new_radius, new_height, from_pipe=None, name=None):
+    if from_pipe:
+        val = cmds.duplicate(from_pipe, rr=True, name=name)[0]
     else:
-        cmds.polyPipe(name=name)
-    val = cmds.polyPipe(
-        e=True, radius=new_radius, height=new_height*2, name=name)
-    print val
+        val = cmds.polyPipe(name=name)[0]
+    print "copied: " + val if from_pipe else "new: " + val
+    cmds.polyPipe(val, e=True, radius=new_radius, height=new_height*2, name=name)
     return val
 
 # thing = pipe(1, 6)
@@ -35,19 +34,23 @@ main_c = math.pi * main_radius
 
 rotated_deg = 0
 last_pipe_d = 0
+last_pipe_name = None
 
 for i in range(1, n_pipes):
     n = "p%d" % i
     pd = random.choice(range(min_piped, max_piped+1))
-    p = pipe(pd, 6.0, name=n)
-    cmds.select(p[0], r=True)
+
+    p_name = make_pipe(pd, 6.0, name=n, from_pipe=last_pipe_name)
+    cmds.select(p_name, r=True)
     # translate away from center?
     cmds.xform(t=[main_radius, 0, 0], ws=True)
     # reset just the translation context
     cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
 
     # cmds.xform(t=[3, 0, 0])
-    rotate_degrees = (360 * pd)/main_c
+    rotate_distance = last_pipe_d/2 + pd/2
+    rotate_degrees = (360 * rotate_distance)/main_c
+
     rotated_deg = rotated_deg + rotate_degrees
 
     cmds.rotate(0, rotate_degrees, 0, p=[0, 0, 0])
@@ -56,5 +59,8 @@ for i in range(1, n_pipes):
     cmds.xform(t=[0, vert_xlate*i, 0], ws=True)
     # reset just the translation context
     cmds.makeIdentity(apply=True, t=1, r=0, s=0, n=0)
+
+    last_pipe_name = p_name
+    last_pipe_d = pd
 
 cmds.DeleteAllHistory()
