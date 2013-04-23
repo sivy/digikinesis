@@ -55,7 +55,9 @@ for i in range(1, n_pipes+1):
     # translate away from center?
     cmds.xform(t=[0, 0, main_radius], ws=True)
     # reset just the translation context
-    cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
+
+    cmds.makeIdentity(apply=True, t=0, r=1, s=0, n=0)
+
 
     if not i == 1:
         # cmds.xform(t=[3, 0, 0])
@@ -69,9 +71,9 @@ for i in range(1, n_pipes+1):
         cmds.rotate(0, rotate_degrees, 0, p_name, p=[0, 0, 0], ws=True)
 
     # translate vertically
-    # cmds.xform(t=[0, vert_xlate*i, 0], ws=True)
+    cmds.xform(t=[0, vert_xlate*i, 0], ws=True)
     # reset just the translation context
-    # cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
+    cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
 
     last_pipe_name = p_name
     last_pipe_d = pd
