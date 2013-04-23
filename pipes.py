@@ -57,4 +57,4 @@ for i in range(1, n_pipes):
     # reset just the translation context
     cmds.makeIdentity(apply=True, t=1, r=0, s=0, n=0)
 
-    cmds.DeleteHistory()
+cmds.DeleteAllHistory()
