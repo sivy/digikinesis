@@ -1,24 +1,33 @@
 from maya import cmds
 import random
 import math
+import logging
+
+log = logging.getLogger('dk')
+log.setLevel(logging.DEBUG)
 
 
 def pipe(radius, height, name=None):
     t = 1/float(16)  # 16ga
     val = cmds.polyPipe(
         thickness=t, radius=radius, height=height*2, name=name)
-    print val
+    log.debug(val)
     return val
 
 
 def make_pipe(new_radius, new_height, from_pipe=None, name=None):
     if from_pipe:
-        val = cmds.duplicate(from_pipe, rr=True, name=name)[0]
+        ret = cmds.duplicate(from_pipe, rr=True, name=name, un=True)
+        log.debug(ret)
+        new_name, shape = ret
     else:
-        val = cmds.polyPipe(name=name)[0]
-    print "copied: " + val if from_pipe else "new: " + val
-    cmds.polyPipe(val, e=True, radius=new_radius, height=new_height*2, name=name)
-    return val
+        new_name, shape = cmds.polyPipe(name=name)
+
+    log.debug("copied: " + new_name if from_pipe else "new: " + new_name)
+    cmds.setAttr(shape + '.radius', new_radius)
+    cmds.setAttr(shape + '.height', new_height)
+    cmds.setAttr(shape + '.radius', new_radius)
+    return new_name, shape
 
 # thing = pipe(1, 6)
 
@@ -40,7 +49,7 @@ for i in range(1, n_pipes):
     n = "p%d" % i
     pd = random.choice(range(min_piped, max_piped+1))
 
-    p_name = make_pipe(pd, 6.0, name=n, from_pipe=last_pipe_name)
+    p_name, p_shape = make_pipe(pd, 6.0, name=n, from_pipe=last_pipe_name)
     cmds.select(p_name, r=True)
     # translate away from center?
     cmds.xform(t=[main_radius, 0, 0], ws=True)
