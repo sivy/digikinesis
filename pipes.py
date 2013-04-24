@@ -31,69 +31,67 @@ def make_pipe(new_radius, new_height, basename="pipe_000", from_pipe_name=None):
     return new_name, shape
 
 
-n_pipes = 8
-# n_divisions = 10
-pipe_h = 6.0
-vert_xlate = 3
+def make_art(n_pipes=8,
+             min_pipeh=4.0, max_pipeh=10.0,
+             min_vert_overlap=3.0, max_vert_overlap=5.0,
+             min_piped=1.0, max_piped=2.0,
+             main_radius=3):
 
-min_piped = 1
-max_piped = 2
+    last_pipe_d = 0
+    last_pipe_name = None
 
-main_radius = 6
-main_c = math.pi * main_radius
+    for i in range(1, n_pipes+1):
+        p_name = "pipe%d" % i
+        pd = random.choice(range(min_piped, max_piped+1))
 
-rotated_deg = 0
-last_pipe_d = 0
-last_pipe_name = None
+        pipe_h = random.randrange(min_pipeh, max_pipeh)
 
-for i in range(1, n_pipes+1):
-    p_name = "pipe%d" % i
-    pd = random.choice(range(min_piped, max_piped+1))
+        p_name, p_shape = make_pipe(pd, pipe_h, from_pipe_name=last_pipe_name, basename=p_name)
+        cmds.select(p_name, r=True)
+        # translate away from center?
+        cmds.xform(t=[0, 0, main_radius], ws=True)
+        # reset just the translation context
 
-    p_name, p_shape = make_pipe(pd, pipe_h, from_pipe_name=last_pipe_name, basename=p_name)
-    cmds.select(p_name, r=True)
-    # translate away from center?
-    cmds.xform(t=[0, 0, main_radius], ws=True)
-    # reset just the translation context
+        cmds.makeIdentity(apply=True, t=0, r=1, s=0, n=0)
 
-    cmds.makeIdentity(apply=True, t=0, r=1, s=0, n=0)
+        if not i == 1:
+            # cmds.xform(t=[3, 0, 0])
+            # sin(x) = opposite/hypotenuse, x = sin-1(O/H)
+            # python's inverse sin is math.asin
+            last_pipe_rads = math.asin(last_pipe_d/float(main_radius))
+            last_pipe_degs = last_pipe_rads * 180.0/math.pi  # convert radians to degrees
 
-    if not i == 1:
-        # cmds.xform(t=[3, 0, 0])
-        # sin(x) = opposite/hypotenuse, x = sin-1(O/H)
-        # python's inverse sin is math.asin
-        last_pipe_rads = math.asin(last_pipe_d/float(main_radius))
-        last_pipe_degs = last_pipe_rads * 180.0/math.pi  # convert radians to degrees
+            log.debug("last_pipe_degs: %d" % last_pipe_degs)
 
-        log.debug("last_pipe_degs: %d" % last_pipe_degs)
+            pipe_rads = math.asin(pd/float(main_radius))
+            pipe_degs = pipe_rads * 180.0/math.pi  # convert radians to degrees
+            log.debug("pipe_degs: %d" % pipe_degs)
 
-        pipe_rads = math.asin(pd/float(main_radius))
-        pipe_degs = pipe_rads * 180.0/math.pi  # convert radians to degrees
-        log.debug("pipe_degs: %d" % pipe_degs)
+            # total rotation is the last pipe's radius in degrees, plus
+            # the current pipe's radius in degrees
+            rotate_degrees = last_pipe_degs + pipe_degs
 
-        # total rotation is the last pipe's radius in degrees, plus
-        # the current pipe's radius in degrees
-        rotate_degrees = last_pipe_degs + pipe_degs
+            # rotated_deg = rotated_deg + rotate_degrees
 
-        # rotated_deg = rotated_deg + rotate_degrees
+            # cmds.rotate(0, rotate_degrees, 0, p=[0, 0, 0])
+            log.debug('rotating %s by %d degrees around p [0 0 0] in worldspace' % (p_name, rotate_degrees))
+            cmds.rotate(0,                # x
+                        rotate_degrees,   # y
+                        0,                # z
+                        p_name,           # name of object
+                        pivot=[0, 0, 0],  # pivot
+                        worldSpace=True)  # corrds are in worldspace, not objectspace
 
-        # cmds.rotate(0, rotate_degrees, 0, p=[0, 0, 0])
-        log.debug('rotating %s by %d degrees around p [0 0 0] in worldspace' % (p_name, rotate_degrees))
-        cmds.rotate(0,                # x
-                    rotate_degrees,   # y
-                    0,                # z
-                    p_name,           # name of object
-                    pivot=[0, 0, 0],  # pivot
-                    worldSpace=True)  # corrds are in worldspace, not objectspace
+        # translate vertically
+        cmds.xform(translation=[0, min_vert_overlap*i, 0],
+                   relative=True,
+                   objectSpace=True)
+        # reset just the translation context
+        # cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
 
-    # translate vertically
-    cmds.xform(translation=[0, vert_xlate*i, 0],
-               relative=True,
-               objectSpace=True)
-    # reset just the translation context
-    # cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
+        last_pipe_name = p_name
+        last_pipe_d = pd
 
-    last_pipe_name = p_name
-    last_pipe_d = pd
+    cmds.DeleteAllHistory()
 
-cmds.DeleteAllHistory()
+make_art()
