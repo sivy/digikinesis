@@ -56,9 +56,12 @@ def make_art(n_pipes=8,
 
         if not i == 1:
             # cmds.xform(t=[3, 0, 0])
+
+            # http://www.mathsisfun.com/algebra/trig-finding-angle-right-triangle.html
             # sin(x) = opposite/hypotenuse, x = sin-1(O/H)
             # python's inverse sin is math.asin
             last_pipe_rads = math.asin(last_pipe_d/float(main_radius))
+            # http://www.mathwarehouse.com/trigonometry/radians/convert-degee-to-radians.php
             last_pipe_degs = last_pipe_rads * 180.0/math.pi  # convert radians to degrees
 
             log.debug("last_pipe_degs: %d" % last_pipe_degs)
