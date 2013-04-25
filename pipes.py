@@ -100,6 +100,9 @@ def make_art(n_pipes=8,
         last_pipe_d = pd
 
 
+####
+# gui code thanks to Sean <sean.ivy@gmail.com>
+
 def handle_input(*args):
     n_pipes_int = cmds.intField('n_pipes_int', q=True, v=True)
     min_pipe_size_int = cmds.floatSlider('min_pipe_size_int', q=True, v=True)
