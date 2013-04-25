@@ -35,10 +35,12 @@ def make_art(n_pipes=8,
              min_pipeh=4.0, max_pipeh=10.0,
              min_vert_overlap=3.0, max_vert_overlap=5.0,
              min_piped=1.0, max_piped=2.0,
-             main_radius=3):
+             main_radius=3,
+             *args):
 
     last_pipe_d = 0
     last_pipe_name = None
+    # last_pipe_shape = None
 
     for i in range(1, n_pipes+1):
         p_name = "pipe%d" % i
@@ -85,6 +87,7 @@ def make_art(n_pipes=8,
                         pivot=[0, 0, 0],  # pivot
                         worldSpace=True)  # corrds are in worldspace, not objectspace
 
+        # log.debug(cmds.polyPipe(last_pipe_shape, q=True, height=True))
         # translate vertically
         cmds.xform(translation=[0, min_vert_overlap*i, 0],
                    relative=True,
@@ -93,8 +96,51 @@ def make_art(n_pipes=8,
         # cmds.makeIdentity(apply=True, t=1, r=1, s=0, n=0)
 
         last_pipe_name = p_name
+        # last_pipe_shape = p_shape
         last_pipe_d = pd
 
+
+def handle_input(*args):
+    n_pipes_int = cmds.intField('n_pipes_int', q=True, v=True)
+    min_pipe_size_int = cmds.floatSlider('min_pipe_size_int', q=True, v=True)
+    max_pipe_size_int = cmds.floatSlider('max_pipe_size_int', q=True, v=True)
+    main_radius = cmds.intField('main_radius_int', q=True, v=True)
+
+    make_art(n_pipes=n_pipes_int, min_piped=min_pipe_size_int, max_piped=max_pipe_size_int,
+             main_radius=main_radius)
+
+
+def handle_delete_button(*args):
     cmds.DeleteAllHistory()
 
-make_art()
+
+def gui():
+    if (cmds.window('dk_pipe_gui_001', ex=True)):
+        cmds.deleteUI('dk_pipe_gui_001')
+    # This clears any window preferences on our GUI
+    if (cmds.windowPref('dk_pipe_gui_001', ex=True)):
+        cmds.windowPref('dk_pipe_gui_001', r=True)
+
+    cmds.window('dk_pipe_gui_001', t="Build Pipes")
+    cmds.columnLayout('MAIN')
+    cmds.rowColumnLayout(nc=2)
+
+    cmds.iconTextStaticLabel(st='textOnly', l='No. Pipes')
+    cmds.intField('n_pipes_int', w=150, min=1, max=20, v=8)
+
+    cmds.iconTextStaticLabel(st='textOnly', l='Min Pipe Size')
+    cmds.floatSlider('min_pipe_size_int', min=1, max=4, value=1, step=1)
+
+    cmds.iconTextStaticLabel(st='textOnly', l='Max Pipe Size')
+    cmds.floatSlider('max_pipe_size_int', min=1, max=4, value=1, step=1)
+
+    cmds.iconTextStaticLabel(st='textOnly', l='Art Radius')
+    cmds.intField('main_radius_int', value=3)
+
+    cmds.button(w=150, l='Create Pipes', c=handle_input)
+
+    cmds.setParent('MAIN')
+    cmds.columnLayout('SECOND')
+    cmds.button(w=300, l='Delete History (All)', c=handle_delete_button)
+
+    cmds.showWindow('dk_pipe_gui_001')
