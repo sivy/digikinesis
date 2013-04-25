@@ -3,7 +3,7 @@ import random
 import math
 import logging
 
-log = logging.getLogger('dk')
+log = logging.getLogger('pipes')
 log.setLevel(logging.DEBUG)
 
 
